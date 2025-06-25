@@ -14,11 +14,7 @@ const router = Router();
 router.post(
   "/upload",
   authenticateToken,
-  (
-    req: import("express").Request,
-    res: import("express").Response,
-    next: import("express").NextFunction
-  ) => {
+  (req, res, next) => {
     upload.single("image")(req, res, (err: any) => {
       if (err) {
         return res.status(400).json({ message: err.message });
@@ -28,7 +24,7 @@ router.post(
   },
   imageUploadLimiter,
   uploadImage
-);
+);  
 
 router.get("/", authenticateToken, getUserImages);
 
