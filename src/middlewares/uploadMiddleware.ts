@@ -13,14 +13,15 @@ cloudinary.config({
 
 const storage = new CloudinaryStorage({
   cloudinary,
-  params: {
+  params: async (_req, file) => ({
     folder: "image-service",
     use_filename: true,
     unique_filename: true,
     allowed_formats: ["jpg", "jpeg", "png", "webp"],
     transformation: [{ width: 800, crop: "limit" }],
     resource_type: "image",
-  },
+    public_id: file.originalname.split(".")[0],
+  }),
 });
 
 const fileFilter = (
@@ -41,6 +42,6 @@ export const upload = multer({
   storage,
   fileFilter,
   limits: {
-    fileSize: 5 * 1024 * 1024,
+    fileSize: 5 * 1024 * 1024, // 5 MB
   },
 });
