@@ -1,7 +1,7 @@
 {
   "name": "image-service",
   "version": "1.0.0",
-    "main": "dist/index.js",
+  "main": "index.ts",
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
     "build": "tsc",
