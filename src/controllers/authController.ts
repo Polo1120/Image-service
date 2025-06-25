@@ -3,16 +3,21 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { User } from "../models/User";
 
+
 const JWT_SECRET = process.env.JWT_SECRET || "supersecret";
+if (!JWT_SECRET) {
+  throw new Error("JWT_SECRET is not defined in environment variables.");
+}
 
-
-export const register = async (req: Request, res: Response) => {
+export const register = async (req: Request, res: Response): Promise<void> => {
   const { email, password } = req.body;
 
   try {
     const existingUser = await User.findOne({ email });
+
     if (existingUser) {
-      return res.status(400).json({ message: "User already exists" });
+      res.status(400).json({ message: "El usuario ya existe" });
+      return;
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -21,30 +26,41 @@ export const register = async (req: Request, res: Response) => {
 
     const token = jwt.sign({ userId: user._id }, JWT_SECRET, { expiresIn: "1d" });
 
-    res.status(201).json({ token, user: { id: user._id, email: user.email } });
+    res.status(201).json({
+      token,
+      user: {
+        id: user._id,
+        email: user.email,
+      },
+    });
   } catch (error) {
-    console.error("Error in register:", error);
-    res.status(500).json({ message: "Internal server error" });
+    console.error("❌ Error in register:", error);
+    res.status(500).json({ message: "Error interno del servidor" });
   }
 };
 
-
-export const login = async (req: Request, res: Response) => {
+export const login = async (req: Request, res: Response): Promise<void> => {
   const { email, password } = req.body;
 
   try {
     const user = await User.findOne({ email });
-    const isValid = user && (await bcrypt.compare(password, user.password));
 
-    if (!isValid) {
-      return res.status(401).json({ message: "Invalid email or password" });
+    if (!user || !(await bcrypt.compare(password, user.password))) {
+      res.status(401).json({ message: "Correo o contraseña inválidos" });
+      return;
     }
 
     const token = jwt.sign({ userId: user._id }, JWT_SECRET, { expiresIn: "1d" });
 
-    res.status(200).json({ token, user: { id: user._id, email: user.email } });
+    res.status(200).json({
+      token,
+      user: {
+        id: user._id,
+        email: user.email,
+      },
+    });
   } catch (error) {
-    console.error("Error in login:", error);
-    res.status(500).json({ message: "Internal server error" });
+    console.error("❌ Error in login:", error);
+    res.status(500).json({ message: "Error interno del servidor" });
   }
 };
