@@ -13,7 +13,10 @@ interface AuthenticatedRequest extends Request {
   };
 }
 
-export const uploadImage = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+export const uploadImage = async (
+  req: AuthenticatedRequest,
+  res: Response
+): Promise<void> => {
   const file = req.file;
   const userId = req.user?.userId;
 
@@ -46,7 +49,10 @@ export const uploadImage = async (req: AuthenticatedRequest, res: Response): Pro
   }
 };
 
-export const getUserImages = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+export const getUserImages = async (
+  req: AuthenticatedRequest,
+  res: Response
+): Promise<void> => {
   const userId = req.user?.userId;
 
   if (!userId) {
@@ -58,7 +64,9 @@ export const getUserImages = async (req: AuthenticatedRequest, res: Response): P
     const images = await Image.find({ userId }).sort({ createdAt: -1 });
 
     if (images.length === 0) {
-      res.status(404).json({ message: "No se encontraron imágenes para este usuario" });
+      res
+        .status(404)
+        .json({ message: "No se encontraron imágenes para este usuario" });
       return;
     }
 
@@ -69,7 +77,10 @@ export const getUserImages = async (req: AuthenticatedRequest, res: Response): P
   }
 };
 
-export const getImageById = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+export const getImageById = async (
+  req: AuthenticatedRequest,
+  res: Response
+): Promise<void> => {
   const { id } = req.params;
 
   if (!mongoose.Types.ObjectId.isValid(id)) {
@@ -92,7 +103,10 @@ export const getImageById = async (req: AuthenticatedRequest, res: Response): Pr
   }
 };
 
-export const deleteImage = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+export const deleteImage = async (
+  req: AuthenticatedRequest,
+  res: Response
+): Promise<void> => {
   const { id } = req.params;
   const userId = req.user?.userId;
 
@@ -101,11 +115,13 @@ export const deleteImage = async (req: AuthenticatedRequest, res: Response): Pro
 
     if (!image) {
       res.status(404).json({ message: "Imagen no encontrada" });
-      return; 
+      return;
     }
 
     if (image.userId.toString() !== userId) {
-      res.status(403).json({ message: "No tienes permiso para eliminar esta imagen" });
+      res
+        .status(403)
+        .json({ message: "No tienes permiso para eliminar esta imagen" });
       return;
     }
 
