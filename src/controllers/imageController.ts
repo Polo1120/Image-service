@@ -3,14 +3,23 @@ import { Image } from "../models/Image";
 import mongoose from "mongoose";
 import { v2 as cloudinary } from "cloudinary";
 
-export const uploadImage = async (req: Request, res: Response) => {
-  const file = req.file as Express.Multer.File;
-  const userId = (req as any).user.userId;
+interface AuthenticatedRequest extends Request {
+  user?: {
+    userId: string;
+  };
+  file?: Express.Multer.File & {
+    path: string;
+    filename: string;
+  };
+}
+
+export const uploadImage = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+  const file = req.file;
+  const userId = req.user?.userId;
 
   if (!file || !file.path) {
-    return res
-      .status(400)
-      .json({ message: "No se subió ninguna imagen válida" });
+    res.status(400).json({ message: "No se subió ninguna imagen válida" });
+    return;
   }
 
   try {
@@ -18,6 +27,7 @@ export const uploadImage = async (req: Request, res: Response) => {
       "/upload/",
       "/upload/f_auto,q_auto/"
     );
+
     const image = await Image.create({
       filename: file.originalname,
       url: optimizedUrl,
@@ -36,36 +46,43 @@ export const uploadImage = async (req: Request, res: Response) => {
   }
 };
 
-export const getUserImages = async (req: Request, res: Response) => {
-  const userId = (req as any).user.userId;
+export const getUserImages = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+  const userId = req.user?.userId;
+
+  if (!userId) {
+    res.status(401).json({ message: "Usuario no autenticado" });
+    return;
+  }
+
   try {
     const images = await Image.find({ userId }).sort({ createdAt: -1 });
 
     if (images.length === 0) {
-      return res
-        .status(404)
-        .json({ message: "No se encontraron imágenes para este usuario" });
+      res.status(404).json({ message: "No se encontraron imágenes para este usuario" });
+      return;
     }
 
     res.status(200).json(images);
   } catch (error) {
-    console.error("Error al obtener imágenes del usuario:", error);
+    console.error("❌ Error al obtener imágenes del usuario:", error);
     res.status(500).json({ message: "Error interno del servidor" });
   }
 };
 
-export const getImageById = async (req: Request, res: Response) => {
+export const getImageById = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
   const { id } = req.params;
 
   if (!mongoose.Types.ObjectId.isValid(id)) {
-    return res.status(400).json({ message: "ID de imagen inválido" });
+    res.status(400).json({ message: "ID de imagen inválido" });
+    return;
   }
 
   try {
     const image = await Image.findById(id);
 
     if (!image) {
-      return res.status(404).json({ message: "Imagen no encontrada" });
+      res.status(404).json({ message: "Imagen no encontrada" });
+      return;
     }
 
     res.status(200).json(image);
@@ -75,21 +92,26 @@ export const getImageById = async (req: Request, res: Response) => {
   }
 };
 
-export const deleteImage = async (req: Request, res: Response) => {
+export const deleteImage = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
   const { id } = req.params;
-  const userId = (req as any).user.userId;
+  const userId = req.user?.userId;
 
   try {
     const image = await Image.findById(id);
 
     if (!image) {
-      return res.status(404).json({ message: "Imagen no encontrada" });
+      res.status(404).json({ message: "Imagen no encontrada" });
+      return; 
     }
 
     if (image.userId.toString() !== userId) {
-      return res
-        .status(403)
-        .json({ message: "No tienes permiso para eliminar esta imagen" });
+      res.status(403).json({ message: "No tienes permiso para eliminar esta imagen" });
+      return;
+    }
+
+    if (!image.public_id) {
+      res.status(400).json({ message: "Falta el public_id de la imagen" });
+      return;
     }
 
     await Promise.all([

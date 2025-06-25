@@ -7,22 +7,26 @@ export const authenticateToken = (
   req: Request,
   res: Response,
   next: NextFunction
-) => {
+): void => {
   const authHeader = req.headers.authorization;
   const token = authHeader && authHeader.split(" ")[1];
 
-  if (!token) return res.sendStatus(401);
+  if (!token) {
+    res.sendStatus(401);
+    return;
+  }
 
   jwt.verify(token, JWT_SECRET, (err, decoded) => {
     if (!decoded) {
-      if (err && err.name === "TokenExpiredError") {
-        return res.status(401).json({ message: "Token expirado" });
-      } else if (err) {
-        return res.status(403).json({ message: "Token inválido" });
+      if (err?.name === "TokenExpiredError") {
+        res.status(401).json({ message: "Token expirado" });
+      } else {
+        res.status(403).json({ message: "Token inválido" });
       }
-    } else {
-      (req as any).user = decoded;
-      next();
+      return;
     }
+
+    (req as any).user = decoded;
+    next();
   });
 };
