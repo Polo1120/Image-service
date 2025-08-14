@@ -9,7 +9,7 @@ export const errorHandler = (
   console.error("❌ Error:", err);
 
   const status = err.status || 500;
-  const message = err.message || "Error interno del servidor";
+  const message = err.message || "Internal server error";
 
   res.status(status).json({ message });
 };

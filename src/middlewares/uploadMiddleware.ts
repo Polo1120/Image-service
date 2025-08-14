@@ -30,11 +30,10 @@ const fileFilter = (
   cb: multer.FileFilterCallback
 ) => {
   const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
-
   if (allowedTypes.includes(file.mimetype)) {
     cb(null, true);
   } else {
-    cb(new Error("Solo se permiten archivos JPG, PNG o WEBP"));
+    cb(new Error("Invalid file type. Only JPEG, PNG, and WebP are allowed."));
   }
 };
 
@@ -45,3 +44,12 @@ export const upload = multer({
     fileSize: 5 * 1024 * 1024, // 5 MB
   },
 });
+
+
+export const uploadMemory = upload.fields([
+  { name: "file", maxCount: 1 },
+  { name: "message", maxCount: 1 },
+  { name: "dateSpecial", maxCount: 1 },
+  { name: "location", maxCount: 1 },
+  { name: "tags", maxCount: 1 },
+]);

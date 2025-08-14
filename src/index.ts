@@ -6,31 +6,50 @@ import authRoutes from "./routes/authRoutes";
 import imageRoutes from "./routes/imageRoutes";
 import { errorHandler } from "./middlewares/errorHandler";
 import { checkApiKey } from "./middlewares/checkApiKey";
+import swaggerUi from "swagger-ui-express";
+import YAML from "yamljs";
+import * as OpenApiValidator from "express-openapi-validator";
 
-// Configurar variables de entorno
 dotenv.config();
 connectDB();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+const swaggerDocument = YAML.load("./openapi.yaml");
+
+// Swagger UI
+app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+
 // Middlewares globales
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(errorHandler);
+
+// Verificar API Key antes de las rutas protegidas
 app.use(checkApiKey);
 
-// Rutas
+// Rutas (incluyen multer internamente en imageRoutes)
 app.use("/api/auth", authRoutes);
 app.use("/api/images", imageRoutes);
 
-
+// Validación de OpenAPI (después de las rutas con multer)
+app.use(
+  OpenApiValidator.middleware({
+    apiSpec: swaggerDocument,
+    validateRequests: true,
+    validateResponses: true,
+    ignorePaths: /docs/,
+  })
+);
 
 // Ruta raíz
 app.get("/", (_req, res) => {
   res.send("🚀 Servicio de procesamiento de imágenes funcionando");
 });
+
+// Middleware de manejo de errores (siempre al final)
+app.use(errorHandler);
 
 // Iniciar servidor
 app.listen(PORT, () => {
