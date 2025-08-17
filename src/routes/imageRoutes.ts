@@ -5,6 +5,7 @@ import {
   getImageById,
   deleteImage,
   searchImages,
+  getTimeline,
 } from "../controllers/imageController";
 import { authenticateToken } from "../middlewares/auth";
 import { upload } from "../middlewares/uploadMiddleware";
@@ -32,11 +33,12 @@ router.post(
 
 router.get("/", authenticateToken, getUserImages);
 
+
 router.get("/search", authenticateToken, searchImages);
+router.get("/timeline", authenticateToken, getTimeline);
+
 
 router.get("/:id", authenticateToken, getImageById);
-
-
 router.delete("/:id/delete", authenticateToken, deleteImage);
 
 export default router;

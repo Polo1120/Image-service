@@ -89,19 +89,14 @@ export const getUserImages = async (
   try {
     const images = await Image.find({ userId }).sort({ createdAt: -1 });
 
-    if (images.length === 0) {
-      res
-        .status(404)
-        .json({ message: "No images found for this user" });
-      return;
-    }
-
+    
     res.status(200).json(images);
   } catch (error) {
     console.error("❌ Error fetching user images:", error);
     res.status(500).json({ message: "Internal server error" });
   }
 };
+
 
 export const getImageById = async (
   req: AuthenticatedMulterRequest,
@@ -154,6 +149,19 @@ export const searchImages = async (
   }
 };
 
+export const getTimeline = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  try {
+    const images = await Image.find().sort({ createdAt: -1 });
+    res.status(200).json(images);
+  } catch (error) {
+    console.error("Error fetching timeline:", error);
+    res.status(500).json({ error: "Failed to fetch timeline" });
+  }
+};
+
 export const deleteImage = async (
   req: AuthenticatedMulterRequest,
   res: Response
@@ -170,9 +178,7 @@ export const deleteImage = async (
     }
 
     if (image.userId.toString() !== userId) {
-      res
-        .status(403)
-        .json({ message: "No permission to delete this image" });
+      res.status(403).json({ message: "No permission to delete this image" });
       return;
     }
 

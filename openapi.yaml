@@ -51,6 +51,9 @@ components:
           type: string
           format: date
           example: "2025-08-13"
+        title:
+          type: string
+          example: "Nuestro primer viaje juntos" 
         location:
           type: string
           example: "París, Francia"
@@ -224,7 +227,7 @@ paths:
                 items:
                   $ref: "#/components/schemas/ImageUploadResponse"
 
-  /api/timeline:
+  /api/images/timeline:
     get:
       summary: Shows all images in chronological order
       tags: [Images]

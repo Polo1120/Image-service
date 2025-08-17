@@ -18,22 +18,22 @@ const PORT = process.env.PORT || 3000;
 
 const swaggerDocument = YAML.load("./openapi.yaml");
 
-// Swagger UI
+
 app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
-// Middlewares globales
+
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Verificar API Key antes de las rutas protegidas
+
 app.use(checkApiKey);
 
-// Rutas (incluyen multer internamente en imageRoutes)
+
 app.use("/api/auth", authRoutes);
 app.use("/api/images", imageRoutes);
 
-// Validación de OpenAPI (después de las rutas con multer)
+
 app.use(
   OpenApiValidator.middleware({
     apiSpec: swaggerDocument,
@@ -43,15 +43,15 @@ app.use(
   })
 );
 
-// Ruta raíz
+
 app.get("/", (_req, res) => {
-  res.send("🚀 Servicio de procesamiento de imágenes funcionando");
+  res.send("🚀 Image processing service is running");
 });
 
-// Middleware de manejo de errores (siempre al final)
+
 app.use(errorHandler);
 
-// Iniciar servidor
+
 app.listen(PORT, () => {
-  console.log(`✅ Servidor escuchando en http://localhost:${PORT}`);
+  console.log(`✅ Server listening on port :${PORT}`);
 });
