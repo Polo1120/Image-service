@@ -18,7 +18,7 @@ export const uploadImage = async (
 
   try {
     const title = req.body.title || undefined;
-    const message = req.body.message || undefined;
+    const description = req.body.description || undefined;
     const location = req.body.location || undefined;
     const dateSpecial = req.body.dateSpecial
       ? new Date(req.body.dateSpecial)
@@ -43,7 +43,7 @@ export const uploadImage = async (
       public_id: file.filename,
       userId,
       title,
-      message,
+      description,
       location,
       dateSpecial,
       tags,
@@ -59,7 +59,7 @@ export const uploadImage = async (
         dateSpecial: doc.dateSpecial ?? undefined,
         location: doc.location ?? undefined,
         title: doc.title ?? undefined,
-        message: doc.message ?? undefined,
+        description: doc.description ?? undefined,
         tags: Array.isArray(doc.tags) ? doc.tags : [],
       },
       createdAt: doc.createdAt,
@@ -139,7 +139,7 @@ export const searchImages = async (
     const regex = new RegExp(q, "i");
 
     const images = await Image.find({
-      $or: [{ tags: { $in: [regex] } }, { location: regex }],
+      $or: [{ tags: { $in: [regex] } }, { location: regex } , { title: regex }, { message: regex }],
     }).sort({ createdAt: -1 });
 
     res.status(200).json(images);
