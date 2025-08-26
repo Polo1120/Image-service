@@ -17,7 +17,7 @@ export const uploadImage = async (
       return;
     }
 
-    const { title, message, location } = req.body;
+    const { title, description, location } = req.body;
     const dateSpecial = req.body.dateSpecial
       ? new Date(req.body.dateSpecial)
       : undefined;
@@ -44,7 +44,7 @@ export const uploadImage = async (
       public_id: file.filename,
       userId,
       title,
-      message,
+      description,
       location,
       dateSpecial,
       tags,
@@ -62,7 +62,7 @@ export const uploadImage = async (
           dateSpecial: doc.dateSpecial ?? undefined,
           location: doc.location ?? undefined,
           title: doc.title ?? undefined,
-          message: doc.message ?? undefined,
+          description: doc.description ?? undefined,
           tags: Array.isArray(doc.tags) ? doc.tags : [],
         },
         createdAt: doc.createdAt,

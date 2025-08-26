@@ -151,7 +151,7 @@ Uploads a new image to Cloudinary. Requires `Authorization` header with JWT and 
 
 - `file`: The image file to upload (e.g., `.jpg`, `.png`).
 - `title` (optional): A string representing the title of the image.
-- `message` (optional): A string containing a description or message for the image.
+- `description` (optional): A string containing a description or message for the image.
 - `location` (optional): A string indicating the location where the image was taken or is relevant to.
 - `dateSpecial` (optional): A string representing a special date associated with the image (e.g., "2025-08-26").
 - `tags` (optional): A string of comma-separated tags (e.g., "nature, landscape") or an array of strings.
@@ -301,6 +301,78 @@ Deletes an image by its ID. Requires `Authorization` header with JWT and `x-api-
 ```
 
 **Response Body (Error 401/404/500):**
+
+```json
+{
+  "message": "Error message"
+}
+```
+
+#### `GET /api/images/search`
+
+Searches for images based on a query string. The search is performed on `tags` and `location` fields. Requires `Authorization` header with JWT and `x-api-key` header.
+
+**Request Content:** Query Parameter
+
+**Query Parameters:**
+
+- `q`: The search query string.
+
+**Response Body (Success 200):**
+
+```json
+[
+  {
+    "_id": "string",
+    "url": "string",
+    "publicId": "string",
+    "user": "string",
+    "createdAt": "string",
+    "updatedAt": "string",
+    "title": "string",
+    "message": "string",
+    "location": "string",
+    "dateSpecial": "string",
+    "tags": ["string"]
+  }
+]
+```
+
+**Response Body (Error 400/401/500):**
+
+```json
+{
+  "message": "Error message"
+}
+```
+
+#### `GET /api/images/timeline`
+
+Retrieves all images in chronological order (timeline). Requires `Authorization` header with JWT and `x-api-key` header.
+
+**Request Content:** None (Authentication via Headers)
+
+**Response Body (Success 200):**
+
+```json
+[
+  {
+    "_id": "string",
+    "url": "string",
+    "publicId": "string",
+    "user": "string",
+    "createdAt": "string",
+    "updatedAt": "string",
+    "title": "string",
+    "message": "string",
+    "location": "string",
+    "dateSpecial": "string",
+    "tags": ["string"]
+  }
+]
+```
+
+**Response Body (Error 401/500):**
 
 ```json
 {
