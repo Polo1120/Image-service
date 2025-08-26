@@ -8,28 +8,29 @@ export const uploadImage = async (
   req: AuthenticatedMulterRequest,
   res: Response
 ): Promise<void> => {
-  const file = req.file;
-  const userId = req.user?.userId;
-
-  if (!file || !file.path) {
-    res.status(400).json({ message: "No valid image was uploaded" });
-    return;
-  }
-
   try {
-    const title = req.body.title || undefined;
-    const message = req.body.message || undefined;
-    const location = req.body.location || undefined;
+    const file = req.file;
+    const userId = req.user?.userId;
+
+    if (!file || !file.path) {
+      res.status(400).json({ message: "No valid image was uploaded" });
+      return;
+    }
+
+    const { title, message, location } = req.body;
     const dateSpecial = req.body.dateSpecial
       ? new Date(req.body.dateSpecial)
       : undefined;
-    const tags =
-      typeof req.body.tags === "string"
-        ? req.body.tags
-            .split(",")
-            .map((t: string) => t.trim())
-            .filter(Boolean)
-        : [];
+
+    let tags: string[] = [];
+    if (Array.isArray(req.body.tags)) {
+      tags = req.body.tags.map((t: string) => t.trim()).filter(Boolean);
+    } else if (typeof req.body.tags === "string") {
+      tags = req.body.tags
+        .split(",")
+        .map((t: string) => t.trim())
+        .filter(Boolean);
+    }
 
     const optimizedUrl = file.path.replace(
       "/upload/",
@@ -49,25 +50,23 @@ export const uploadImage = async (
       tags,
     });
 
-    const image = {
-      _id: doc._id.toString(),
-      filename: doc.filename,
-      url: doc.url,
-      public_id: doc.public_id,
-      userId: doc.userId.toString(),
-      metadata: {
-        dateSpecial: doc.dateSpecial ?? undefined,
-        location: doc.location ?? undefined,
-        title: doc.title ?? undefined,
-        message: doc.message ?? undefined,
-        tags: Array.isArray(doc.tags) ? doc.tags : [],
-      },
-      createdAt: doc.createdAt,
-    };
-
     res.status(201).json({
       message: "Image uploaded successfully",
-      image,
+      image: {
+        _id: doc._id.toString(),
+        filename: doc.filename,
+        url: doc.url,
+        public_id: doc.public_id,
+        userId: doc.userId.toString(),
+        metadata: {
+          dateSpecial: doc.dateSpecial ?? undefined,
+          location: doc.location ?? undefined,
+          title: doc.title ?? undefined,
+          message: doc.message ?? undefined,
+          tags: Array.isArray(doc.tags) ? doc.tags : [],
+        },
+        createdAt: doc.createdAt,
+      },
     });
   } catch (error) {
     console.error("❌ Error uploading image:", error);
@@ -89,14 +88,12 @@ export const getUserImages = async (
   try {
     const images = await Image.find({ userId }).sort({ createdAt: -1 });
 
-    
     res.status(200).json(images);
   } catch (error) {
     console.error("❌ Error fetching user images:", error);
     res.status(500).json({ message: "Internal server error" });
   }
 };
-
 
 export const getImageById = async (
   req: AuthenticatedMulterRequest,

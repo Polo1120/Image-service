@@ -6,10 +6,6 @@ import authRoutes from "./routes/authRoutes";
 import imageRoutes from "./routes/imageRoutes";
 import { errorHandler } from "./middlewares/errorHandler";
 import { checkApiKey } from "./middlewares/checkApiKey";
-import swaggerUi from "swagger-ui-express";
-import YAML from "yamljs";
-import * as OpenApiValidator from "express-openapi-validator";
-import path from "path";
 
 dotenv.config();
 connectDB();
@@ -20,18 +16,6 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
-const swaggerDocument = YAML.load(path.join(__dirname, "../openapi.yaml"));
-app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
-
-app.use(
-  OpenApiValidator.middleware({
-    apiSpec: swaggerDocument,
-    validateRequests: true,
-    validateResponses: true,
-    ignorePaths: /docs/,
-  })
-);
 
 app.use("/api", checkApiKey);
 
