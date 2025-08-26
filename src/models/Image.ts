@@ -8,7 +8,7 @@ export interface IImage extends Document {
   userId: Types.ObjectId;
   format?: string;
   title?: string;
-  description?: string;
+  message?: string;
   dateSpecial?: Date;
   location?: string;
   tags?: string[];
@@ -23,7 +23,7 @@ const ImageSchema = new Schema<IImage>(
     public_id: { type: String, required: true },
     format: String,
     title: String,
-    description: String,
+    message: String,
     dateSpecial: Date,
     location: String,
     tags: [String],

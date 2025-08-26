@@ -57,7 +57,7 @@ components:
         location:
           type: string
           example: "París, Francia"
-        description:
+        message:
           type: string
           example: "Nuestro primer viaje juntos 💕"
         tags:
@@ -184,7 +184,7 @@ paths:
                   example: "Nuestro primer viaje juntos"
                 location:
                   type: string
-                description:
+                message:
                   type: string
                 tags:
                   type: array
