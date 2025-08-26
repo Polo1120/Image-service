@@ -139,7 +139,7 @@ export const searchImages = async (
     const regex = new RegExp(q, "i");
 
     const images = await Image.find({
-      $or: [{ tags: { $in: [regex] } }, { location: regex } , { title: regex }, { message: regex }],
+      $or: [{ tags: { $in: [regex] } }, { location: regex } , { title: regex },],
     }).sort({ createdAt: -1 });
 
     res.status(200).json(images);
