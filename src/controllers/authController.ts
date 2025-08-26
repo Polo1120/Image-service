@@ -18,7 +18,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
     const existingUser = await User.findOne({ email });
 
     if (existingUser) {
-      res.status(400).json({ message: "El usuario ya existe" });
+      res.status(400).json({ message: "User already exists" });
       return;
     }
 
@@ -39,7 +39,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
     });
   } catch (error) {
     console.error("❌ Error in register:", error);
-    res.status(500).json({ message: "Error interno del servidor" });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -50,7 +50,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
     const user = await User.findOne({ email });
 
     if (!user || !(await bcrypt.compare(password, user.password))) {
-      res.status(401).json({ message: "Correo o contraseña inválidos" });
+      res.status(401).json({ message: "Incorrect email or password" });
       return;
     }
 
@@ -67,6 +67,6 @@ export const login = async (req: Request, res: Response): Promise<void> => {
     });
   } catch (error) {
     console.error("❌ Error in login:", error);
-    res.status(500).json({ message: "Error interno del servidor" });
+    res.status(500).json({ message: "Internal server error" });
   }
 };

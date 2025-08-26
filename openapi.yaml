@@ -1,0 +1,294 @@
+openapi: 3.1.1
+info:
+  title: Image Service API
+  version: 1.1.0
+servers:
+  - url: http://localhost:3000
+    description: Servidor local
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: x-api-key
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    AuthRequest:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          example: edgardopolo37@gmail.com
+        password:
+          type: string
+          example: test123
+    AuthResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Login successful"
+        token:
+          type: string
+          example: "eyJhbGciOiJIUzI1NiIsInR5..."
+    ErrorResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "User or password incorrect"
+    ImageMetadata:
+      type: object
+      properties:
+        dateSpecial:
+          type: string
+          format: date
+          example: "2025-08-13"
+        title:
+          type: string
+          example: "Nuestro primer viaje juntos" 
+        location:
+          type: string
+          example: "París, Francia"
+        description:
+          type: string
+          example: "Nuestro primer viaje juntos 💕"
+        tags:
+          type: array
+          items:
+            type: string
+          example: ["viaje", "aniversario"]
+    ImageUploadResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Image uploaded successfully"
+        image:
+          type: object
+          properties:
+            _id:
+              type: string
+              example: "64f2b2f4c3e4c2a5f0e4d6b9"
+            filename:
+              type: string
+              example: "foto.png"
+            url:
+              type: string
+              example: "https://res.cloudinary.com/demo/image/upload/f_auto,q_auto/abc123.png"
+            public_id:
+              type: string
+              example: "image-service/abc123"
+            userId:
+              type: string
+              example: "64f2b1e4a1c4c2a5f0e4a6c8"
+            metadata:
+              $ref: "#/components/schemas/ImageMetadata"
+            createdAt:
+              type: string
+              format: date-time
+              example: "2025-08-13T12:34:56Z"
+
+security:
+  - ApiKeyAuth: []
+  - BearerAuth: []
+
+paths:
+  /api/auth/register:
+    post:
+      summary: Registers a user
+      tags: [Auth]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AuthRequest"
+      responses:
+        "201":
+          description: User registered
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "User registered successfully"
+        "400":
+          description: Error in input data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/auth/login:
+    post:
+      summary: Logs in a user
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AuthRequest"
+      responses:
+        "200":
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "401":
+          description: User or password incorrect
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/images/upload:
+    post:
+      summary: Uploads an image to Cloudinary with romantic metadata
+      tags: [Images]
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - file
+              properties:
+                file:
+                  type: string
+                  format: binary
+                dateSpecial:
+                  type: string
+                  format: date
+                title:
+                  type: string
+                  example: "Nuestro primer viaje juntos"
+                location:
+                  type: string
+                description:
+                  type: string
+                tags:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        "201":
+          description: Image uploaded successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ImageUploadResponse"
+
+  /api/images:
+    get:
+      summary: List user images
+      tags: [Images]
+      responses:
+        "200":
+          description: List of user images
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ImageUploadResponse"
+
+  /api/images/search:
+    get:
+      summary: Search images by tags or location
+      tags: [Images]
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Search text
+      responses:
+        "200":
+          description: List of found images
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ImageUploadResponse"
+
+  /api/images/timeline:
+    get:
+      summary: Shows all images in chronological order
+      tags: [Images]
+      responses:
+        "200":
+          description: Timeline of memories
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ImageUploadResponse"
+
+  /api/images/{id}:
+    get:
+      summary: Retrieves an image by its ID
+      tags: [Images]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Image found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ImageUploadResponse"
+        "404":
+          description: Image not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/images/{id}/delete:
+    delete:
+      summary: Deletes an image by its ID
+      tags: [Images]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Image deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Image deleted successfully"
+        "404":
+          description: Image not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"

@@ -6,33 +6,56 @@ import authRoutes from "./routes/authRoutes";
 import imageRoutes from "./routes/imageRoutes";
 import { errorHandler } from "./middlewares/errorHandler";
 import { checkApiKey } from "./middlewares/checkApiKey";
+import swaggerUi from "swagger-ui-express";
+import YAML from "yamljs";
+import * as OpenApiValidator from "express-openapi-validator";
 
-// Configurar variables de entorno
 dotenv.config();
 connectDB();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Middlewares globales
+const swaggerDocument = YAML.load("./openapi.yaml");
+
+
+app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+
+app.use((req, res, next) => {
+  if (req.path.startsWith("/docs")) {
+    return next();
+  }
+  return checkApiKey(req, res, next);
+});
+
+
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(errorHandler);
-app.use(checkApiKey);
 
-// Rutas
+
 app.use("/api/auth", authRoutes);
 app.use("/api/images", imageRoutes);
 
 
+app.use(
+  OpenApiValidator.middleware({
+    apiSpec: swaggerDocument,
+    validateRequests: true,
+    validateResponses: true,
+    ignorePaths: /docs/,
+  })
+);
 
-// Ruta raíz
+
 app.get("/", (_req, res) => {
-  res.send("🚀 Servicio de procesamiento de imágenes funcionando");
+  res.send("🚀 Image processing service is running");
 });
 
-// Iniciar servidor
+
+app.use(errorHandler);
+
+
 app.listen(PORT, () => {
-  console.log(`✅ Servidor escuchando en http://localhost:${PORT}`);
+  console.log(`✅ Server listening on port :${PORT}`);
 });

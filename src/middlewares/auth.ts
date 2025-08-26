@@ -12,16 +12,16 @@ export const authenticateToken = (
   const token = authHeader && authHeader.split(" ")[1];
 
   if (!token) {
-    res.sendStatus(401);
+    res.status(401).json({ message: "JWT token is missing" });
     return;
   }
 
   jwt.verify(token, JWT_SECRET, (err, decoded) => {
-    if (!decoded) {
-      if (err?.name === "TokenExpiredError") {
-        res.status(401).json({ message: "Token expirado" });
+    if (err) {
+      if (err.name === "TokenExpiredError") {
+        res.status(401).json({ message: "Token expired" });
       } else {
-        res.status(403).json({ message: "Token inválido" });
+        res.status(401).json({ message: "Invalid token" });
       }
       return;
     }
