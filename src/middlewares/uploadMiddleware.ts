@@ -48,7 +48,7 @@ export const upload = multer({
 
 export const uploadMemory = upload.fields([
   { name: "file", maxCount: 1 },
-  { name: "description", maxCount: 1 },
+  { name: "message", maxCount: 1 },
   { name: "dateSpecial", maxCount: 1 },
   { name: "location", maxCount: 1 },
   { name: "tags", maxCount: 1 },
