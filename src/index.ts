@@ -21,13 +21,17 @@ const swaggerDocument = YAML.load("./openapi.yaml");
 
 app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
+app.use((req, res, next) => {
+  if (req.path.startsWith("/docs")) {
+    return next();
+  }
+  return checkApiKey(req, res, next);
+});
+
 
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
-
-app.use(checkApiKey);
 
 
 app.use("/api/auth", authRoutes);
