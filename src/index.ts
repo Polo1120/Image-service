@@ -14,6 +14,7 @@ dotenv.config();
 connectDB();
 
 const app = express();
+app.use(cors());
 const PORT = process.env.PORT || 3000;
 
 const swaggerDocument = YAML.load("./openapi.yaml");
@@ -28,8 +29,6 @@ app.use((req, res, next) => {
   return checkApiKey(req, res, next);
 });
 
-
-app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
