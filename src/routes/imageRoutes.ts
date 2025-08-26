@@ -8,7 +8,7 @@ import {
   getTimeline,
 } from "../controllers/imageController";
 import { authenticateToken } from "../middlewares/auth";
-import { upload } from "../middlewares/uploadMiddleware";
+import { upload } from "../middlewares/multer";
 import { imageUploadLimiter } from "../middlewares/rateLimiter";
 import { AuthenticatedMulterRequest } from "../types/AuthenticatedMulterRequest";
 
@@ -19,9 +19,7 @@ router.post(
   authenticateToken,
   (req, res, next) => {
     upload.single("file")(req, res, (err: any) => {
-      if (err) {
-        return res.status(400).json({ message: err.message });
-      }
+      if (err) return res.status(400).json({ message: err.message });
       next();
     });
   },
