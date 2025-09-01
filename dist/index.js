@@ -3,7 +3,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.handler = void 0;
 const express_1 = __importDefault(require("express"));
 const dotenv_1 = __importDefault(require("dotenv"));
 const cors_1 = __importDefault(require("cors"));
@@ -26,5 +25,6 @@ app.get("/", (_req, res) => {
     res.send("🚀 Image processing service is running");
 });
 app.use(errorHandler_1.errorHandler);
+const handler = (0, serverless_http_1.default)(app);
 // 👇 Exportar como handler para Vercel
-exports.handler = (0, serverless_http_1.default)(app);
+exports.default = handler;

@@ -27,5 +27,6 @@ app.get("/", (_req, res) => {
 
 app.use(errorHandler);
 
+const handler = serverless(app);
 // 👇 Exportar como handler para Vercel
-export const handler = serverless(app);
+export default handler;
