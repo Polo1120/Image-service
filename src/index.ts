@@ -1,3 +1,4 @@
+console.log("--- Serverless function starting ---");
 import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
@@ -23,11 +24,14 @@ app.use("/api/auth", authRoutes);
 app.use("/api/images", imageRoutes);
 
 app.get("/", (_req, res) => {
+  console.log("--- Root handler called ---");
   res.send("🚀 Image processing service is running");
 });
 
 app.use(errorHandler);
 
-app.listen(PORT, () => {
-  console.log(`✅ Server listening on port :${PORT}`);
-});
+// app.listen(PORT, () => {
+//   console.log(`✅ Server listening on port :${PORT}`);
+// });
+
+export default app;
