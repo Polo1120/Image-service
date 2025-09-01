@@ -1,4 +1,3 @@
-console.log("--- Serverless function starting ---");
 import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
@@ -7,31 +6,26 @@ import authRoutes from "./routes/authRoutes";
 import imageRoutes from "./routes/imageRoutes";
 import { errorHandler } from "./middlewares/errorHandler";
 import { checkApiKey } from "./middlewares/checkApiKey";
+import serverless from "serverless-http"; // 👈 necesitas instalar esto
 
 dotenv.config();
 connectDB();
 
 const app = express();
-const PORT = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use("/api", checkApiKey);
-
 app.use("/api/auth", authRoutes);
 app.use("/api/images", imageRoutes);
 
 app.get("/", (_req, res) => {
-  console.log("--- Root handler called ---");
   res.send("🚀 Image processing service is running");
 });
 
 app.use(errorHandler);
 
-// app.listen(PORT, () => {
-//   console.log(`✅ Server listening on port :${PORT}`);
-// });
-
-export default app;
+// 👇 Exportar como handler para Vercel
+export const handler = serverless(app);
