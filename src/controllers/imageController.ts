@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { Image } from "../models/Image";
+import { User } from "../models/User";
 import mongoose from "mongoose";
 import { v2 as cloudinary } from "cloudinary";
 import { AuthenticatedMulterRequest } from "../types/AuthenticatedMulterRequest";
@@ -32,6 +33,30 @@ export const uploadImage = async (
         .filter(Boolean);
     }
 
+    let taggedUsers: mongoose.Types.ObjectId[] = [];
+    if (req.body.taggedUsernames) {
+      let usernamesToTag: string[] = [];
+      if (Array.isArray(req.body.taggedUsernames)) {
+        usernamesToTag = req.body.taggedUsernames
+          .map((u: string) => u.trim())
+          .filter(Boolean);
+      } else if (typeof req.body.taggedUsernames === "string") {
+        usernamesToTag = req.body.taggedUsernames
+          .split(",")
+          .map((u: string) => u.trim())
+          .filter(Boolean);
+      }
+
+      if (usernamesToTag.length > 0) {
+        const foundUsers = await User.find({
+          username: { $in: usernamesToTag },
+        }).select("_id");
+        taggedUsers = foundUsers.map(
+          (user) => user._id as mongoose.Types.ObjectId
+        );
+      }
+    }
+
     const optimizedUrl = file.path.replace(
       "/upload/",
       "/upload/f_auto,q_auto/"
@@ -48,12 +73,12 @@ export const uploadImage = async (
       location,
       dateSpecial,
       tags,
+      taggedUsers,
     });
-
     res.status(201).json({
       message: "Image uploaded successfully",
       image: {
-        _id: doc._id.toString(),
+        id: doc._id,
         filename: doc.filename,
         url: doc.url,
         public_id: doc.public_id,
@@ -86,7 +111,9 @@ export const getUserImages = async (
   }
 
   try {
-    const images = await Image.find({ userId }).sort({ createdAt: -1 });
+    const images = await Image.find({
+      $or: [{ userId }, { taggedUsers: userId }],
+    }).sort({ createdAt: -1 });
 
     res.status(200).json(images);
   } catch (error) {
@@ -135,12 +162,29 @@ export const searchImages = async (
 
     const regex = new RegExp(q, "i");
 
+    if (!req.user || !req.user.userId) {
+      res.status(401).json({ message: "User not authenticated" });
+      return;
+    }
+
     const images = await Image.find({
-      $or: [
-        { tags: { $in: [regex] } },
-        { location: regex, title: regex, tags: regex },
+      $and: [
+        {
+          $or: [{ userId: req.user.userId }, { taggedUsers: req.user.userId }],
+        },
+        {
+          $or: [
+            { title: regex },
+            { description: regex },
+            { location: regex },
+            { tags: { $in: [regex] } },
+          ],
+        },
       ],
-    }).sort({ createdAt: -1 });
+    })
+      .populate("userId", "username profileImage")
+      .populate("taggedUsers", "username profileImage")
+      .sort({ createdAt: -1 });
 
     res.status(200).json(images);
   } catch (error) {
