@@ -6,7 +6,7 @@ import authRoutes from "./routes/authRoutes";
 import imageRoutes from "./routes/imageRoutes";
 import { errorHandler } from "./middlewares/errorHandler";
 import { checkApiKey } from "./middlewares/checkApiKey";
-import serverless from "serverless-http"; // 👈 necesitas instalar esto
+import serverless from "serverless-http"; 
 
 dotenv.config();
 connectDB();
@@ -28,5 +28,6 @@ app.get("/", (_req, res) => {
 app.use(errorHandler);
 
 const handler = serverless(app);
-// 👇 Exportar como handler para Vercel
 export default handler;
+
+export { app };

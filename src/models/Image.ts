@@ -1,34 +1,37 @@
-import mongoose, { Document, Schema, Types } from "mongoose";
+import mongoose, { Document, Schema } from "mongoose";
 
 export interface IImage extends Document {
-  _id: Types.ObjectId; 
   filename: string;
-  public_id: string;
   url: string;
-  userId: Types.ObjectId;
-  format?: string;
+  format: string;
+  public_id: string;
+  userId: mongoose.Schema.Types.ObjectId;
   title?: string;
   description?: string;
-  dateSpecial?: Date;
   location?: string;
+  dateSpecial?: Date;
   tags?: string[];
+  taggedUsers?: mongoose.Schema.Types.ObjectId[];
+  views: number;
   createdAt: Date;
+  updatedAt: Date;
 }
 
-const ImageSchema = new Schema<IImage>(
+const imageSchema = new Schema<IImage>(
   {
     filename: { type: String, required: true },
     url: { type: String, required: true },
-    userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
-    public_id: { type: String, required: true },
-    format: String,
-    title: String,
-    description: String,
-    dateSpecial: Date,
-    location: String,
-    tags: [String],
+    format: { type: String, required: true },
+    public_id: { type: String, required: true, unique: true },
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+    title: { type: String },
+    description: { type: String },
+    location: { type: String },
+    dateSpecial: { type: Date },
+    tags: [{ type: String }],
+    taggedUsers: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
   },
   { timestamps: true }
 );
 
-export const Image = mongoose.model<IImage>("Image", ImageSchema);
+export const Image = mongoose.model<IImage>("Image", imageSchema);

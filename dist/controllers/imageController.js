@@ -14,6 +14,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.deleteImage = exports.getTimeline = exports.searchImages = exports.getImageById = exports.getUserImages = exports.uploadImage = void 0;
 const Image_1 = require("../models/Image");
+const User_1 = require("../models/User");
 const mongoose_1 = __importDefault(require("mongoose"));
 const cloudinary_1 = require("cloudinary");
 const uploadImage = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -39,6 +40,27 @@ const uploadImage = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
                 .map((t) => t.trim())
                 .filter(Boolean);
         }
+        let taggedUsers = [];
+        if (req.body.taggedUsernames) {
+            let usernamesToTag = [];
+            if (Array.isArray(req.body.taggedUsernames)) {
+                usernamesToTag = req.body.taggedUsernames
+                    .map((u) => u.trim())
+                    .filter(Boolean);
+            }
+            else if (typeof req.body.taggedUsernames === "string") {
+                usernamesToTag = req.body.taggedUsernames
+                    .split(",")
+                    .map((u) => u.trim())
+                    .filter(Boolean);
+            }
+            if (usernamesToTag.length > 0) {
+                const foundUsers = yield User_1.User.find({
+                    username: { $in: usernamesToTag },
+                }).select("_id");
+                taggedUsers = foundUsers.map((user) => user._id);
+            }
+        }
         const optimizedUrl = file.path.replace("/upload/", "/upload/f_auto,q_auto/");
         const doc = yield Image_1.Image.create({
             filename: file.originalname,
@@ -51,11 +73,12 @@ const uploadImage = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
             location,
             dateSpecial,
             tags,
+            taggedUsers,
         });
         res.status(201).json({
             message: "Image uploaded successfully",
             image: {
-                _id: doc._id.toString(),
+                id: doc._id,
                 filename: doc.filename,
                 url: doc.url,
                 public_id: doc.public_id,
@@ -85,7 +108,9 @@ const getUserImages = (req, res) => __awaiter(void 0, void 0, void 0, function* 
         return;
     }
     try {
-        const images = yield Image_1.Image.find({ userId }).sort({ createdAt: -1 });
+        const images = yield Image_1.Image.find({
+            $or: [{ userId }, { taggedUsers: userId }],
+        }).sort({ createdAt: -1 });
         res.status(200).json(images);
     }
     catch (error) {
@@ -122,12 +147,28 @@ const searchImages = (req, res) => __awaiter(void 0, void 0, void 0, function* (
             return;
         }
         const regex = new RegExp(q, "i");
+        if (!req.user || !req.user.userId) {
+            res.status(401).json({ message: "User not authenticated" });
+            return;
+        }
         const images = yield Image_1.Image.find({
-            $or: [
-                { tags: { $in: [regex] } },
-                { location: regex, title: regex, tags: regex },
+            $and: [
+                {
+                    $or: [{ userId: req.user.userId }, { taggedUsers: req.user.userId }],
+                },
+                {
+                    $or: [
+                        { title: regex },
+                        { description: regex },
+                        { location: regex },
+                        { tags: { $in: [regex] } },
+                    ],
+                },
             ],
-        }).sort({ createdAt: -1 });
+        })
+            .populate("userId", "username profileImage")
+            .populate("taggedUsers", "username profileImage")
+            .sort({ createdAt: -1 });
         res.status(200).json(images);
     }
     catch (error) {

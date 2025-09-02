@@ -35,16 +35,17 @@ var __importStar = (this && this.__importStar) || (function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Image = void 0;
 const mongoose_1 = __importStar(require("mongoose"));
-const ImageSchema = new mongoose_1.Schema({
+const imageSchema = new mongoose_1.Schema({
     filename: { type: String, required: true },
     url: { type: String, required: true },
-    userId: { type: mongoose_1.Schema.Types.ObjectId, ref: "User", required: true },
-    public_id: { type: String, required: true },
-    format: String,
-    title: String,
-    description: String,
-    dateSpecial: Date,
-    location: String,
-    tags: [String],
+    format: { type: String, required: true },
+    public_id: { type: String, required: true, unique: true },
+    userId: { type: mongoose_1.default.Schema.Types.ObjectId, ref: "User", required: true },
+    title: { type: String },
+    description: { type: String },
+    location: { type: String },
+    dateSpecial: { type: Date },
+    tags: [{ type: String }],
+    taggedUsers: [{ type: mongoose_1.default.Schema.Types.ObjectId, ref: "User" }],
 }, { timestamps: true });
-exports.Image = mongoose_1.default.model("Image", ImageSchema);
+exports.Image = mongoose_1.default.model("Image", imageSchema);
