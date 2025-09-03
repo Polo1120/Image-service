@@ -6,8 +6,6 @@ import authRoutes from "./routes/authRoutes";
 import imageRoutes from "./routes/imageRoutes";
 import { errorHandler } from "./middlewares/errorHandler";
 import { checkApiKey } from "./middlewares/checkApiKey";
-import serverless from "serverless-http"; 
-
 dotenv.config();
 connectDB();
 
@@ -27,6 +25,11 @@ app.get("/", (_req, res) => {
 
 app.use(errorHandler);
 
-const handler = serverless(app);
-export default handler;
+const port = process.env.PORT || 3000;
+
+app.listen(port, () => {
+  console.log(`Server is running on port ${port}`);
+});
+
+export default app;
 
