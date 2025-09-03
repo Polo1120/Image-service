@@ -11,7 +11,6 @@ const authRoutes_1 = __importDefault(require("./routes/authRoutes"));
 const imageRoutes_1 = __importDefault(require("./routes/imageRoutes"));
 const errorHandler_1 = require("./middlewares/errorHandler");
 const checkApiKey_1 = require("./middlewares/checkApiKey");
-const serverless_http_1 = __importDefault(require("serverless-http"));
 dotenv_1.default.config();
 (0, db_1.connectDB)();
 const app = (0, express_1.default)();
@@ -25,5 +24,8 @@ app.get("/", (_req, res) => {
     res.send("🚀 Image processing service is running");
 });
 app.use(errorHandler_1.errorHandler);
-const handler = (0, serverless_http_1.default)(app);
-exports.default = handler;
+const port = process.env.PORT || 3000;
+app.listen(port, () => {
+    console.log(`Server is running on port ${port}`);
+});
+exports.default = app;
