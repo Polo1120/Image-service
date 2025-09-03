@@ -30,4 +30,3 @@ app.use(errorHandler);
 const handler = serverless(app);
 export default handler;
 
-export { app };
