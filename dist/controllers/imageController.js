@@ -146,11 +146,24 @@ const searchImages = (req, res) => __awaiter(void 0, void 0, void 0, function* (
             res.status(400).json({ message: "The 'q' parameter is required" });
             return;
         }
-        const regex = new RegExp(q, "i");
+        const queryStr = q.trim();
+        const MAX_Q_LEN = 100;
+        const MAX_RESULTS = 100;
+        if (!queryStr) {
+            res.status(400).json({ message: "The 'q' parameter cannot be empty" });
+            return;
+        }
+        if (queryStr.length > MAX_Q_LEN) {
+            res.status(400).json({ message: `Query too long. Max ${MAX_Q_LEN} characters` });
+            return;
+        }
         if (!req.user || !req.user.userId) {
             res.status(401).json({ message: "User not authenticated" });
             return;
         }
+        const escapeRegex = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+        const safeRegex = new RegExp(escapeRegex(queryStr), "i");
+        const startedAt = Date.now();
         const images = yield Image_1.Image.find({
             $and: [
                 {
@@ -158,17 +171,22 @@ const searchImages = (req, res) => __awaiter(void 0, void 0, void 0, function* (
                 },
                 {
                     $or: [
-                        { title: regex },
-                        { description: regex },
-                        { location: regex },
-                        { tags: { $in: [regex] } },
+                        { title: safeRegex },
+                        { description: safeRegex },
+                        { location: safeRegex },
+                        { tags: { $in: [safeRegex] } },
                     ],
                 },
             ],
         })
             .populate("userId", "username profileImage")
             .populate("taggedUsers", "username profileImage")
-            .sort({ createdAt: -1 });
+            .sort({ createdAt: -1 })
+            .limit(MAX_RESULTS)
+            .maxTimeMS(2000)
+            .lean();
+        const elapsed = Date.now() - startedAt;
+        console.log("[SEARCH] ip=%s q_len=%d results=%d ms=%d", req.ip, queryStr.length, images.length, elapsed);
         res.status(200).json(images);
     }
     catch (error) {
