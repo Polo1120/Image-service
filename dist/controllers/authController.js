@@ -35,6 +35,7 @@ const register = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         yield user.save();
         const token = jsonwebtoken_1.default.sign({ userId: user._id }, JWT_SECRET, {
             expiresIn: "1d",
+            algorithm: "HS256",
         });
         res.status(201).json({
             token,
@@ -61,6 +62,7 @@ const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         }
         const token = jsonwebtoken_1.default.sign({ userId: user._id }, JWT_SECRET, {
             expiresIn: "1d",
+            algorithm: "HS256",
         });
         res.status(200).json({
             token,

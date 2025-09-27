@@ -28,6 +28,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
 
     const token = jwt.sign({ userId: user._id }, JWT_SECRET, {
       expiresIn: "1d",
+      algorithm: "HS256",
     });
 
     res.status(201).json({
@@ -57,6 +58,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
 
     const token = jwt.sign({ userId: user._id }, JWT_SECRET, {
       expiresIn: "1d",
+      algorithm: "HS256",
     });
 
     res.status(200).json({

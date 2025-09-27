@@ -6,13 +6,13 @@ const auth_1 = require("../middlewares/auth");
 const multer_1 = require("../middlewares/multer");
 const rateLimiter_1 = require("../middlewares/rateLimiter");
 const router = (0, express_1.Router)();
-router.post("/upload", auth_1.authenticateToken, (req, res, next) => {
+router.post("/upload", auth_1.authenticateToken, rateLimiter_1.imageUploadLimiter, (req, res, next) => {
     multer_1.upload.single("file")(req, res, (err) => {
         if (err)
             return res.status(400).json({ message: err.message });
         next();
     });
-}, rateLimiter_1.imageUploadLimiter, (req, res, next) => {
+}, (req, res, next) => {
     (0, imageController_1.uploadImage)(req, res).catch(next);
 });
 router.get("/", auth_1.authenticateToken, imageController_1.getUserImages);

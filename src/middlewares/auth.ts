@@ -1,7 +1,10 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 
-const JWT_SECRET = process.env.JWT_SECRET || "supersecret";
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET) {
+  throw new Error("JWT_SECRET is not defined in environment variables.");
+}
 
 export const authenticateToken = (
   req: Request,
@@ -16,17 +19,22 @@ export const authenticateToken = (
     return;
   }
 
-  jwt.verify(token, JWT_SECRET, (err, decoded) => {
-    if (err) {
-      if (err.name === "TokenExpiredError") {
-        res.status(401).json({ message: "Token expired" });
-      } else {
-        res.status(401).json({ message: "Invalid token" });
+  jwt.verify(
+    token,
+    JWT_SECRET,
+    { algorithms: ["HS256"], clockTolerance: 5 },
+    (err, decoded) => {
+      if (err) {
+        if ((err as any).name === "TokenExpiredError") {
+          res.status(401).json({ message: "Token expired" });
+        } else {
+          res.status(401).json({ message: "Invalid token" });
+        }
+        return;
       }
-      return;
-    }
 
-    (req as any).user = decoded;
-    next();
-  });
+      (req as any).user = decoded;
+      next();
+    }
+  );
 };
