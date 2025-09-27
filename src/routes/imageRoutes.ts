@@ -17,13 +17,13 @@ const router = Router();
 router.post(
   "/upload",
   authenticateToken,
+  imageUploadLimiter,
   (req, res, next) => {
     upload.single("file")(req, res, (err: any) => {
       if (err) return res.status(400).json({ message: err.message });
       next();
     });
   },
-  imageUploadLimiter,
   (req: AuthenticatedMulterRequest, res, next) => {
     uploadImage(req, res).catch(next);
   }
